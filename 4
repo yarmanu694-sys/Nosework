@@ -1,0 +1,47 @@
+{
+  "id": "comp_001",
+  "name": "Пример соревнования",
+  "categories": [
+    {
+      "name": "помещение",
+      "totalPoints": 100,
+      "totalTimeSeconds": 120,
+      "totalMarkers": 5
+    },
+    {
+      "name": "местность",
+      "totalPoints": 100,
+      "totalTimeSeconds": 180,
+      "totalMarkers": 8
+    },
+    {
+      "name": "транспорт",
+      "totalPoints": 100,
+      "totalTimeSeconds": 90,
+      "totalMarkers": 3
+    },
+    {
+      "name": "предметы",
+      "totalPoints": 100,
+      "totalTimeSeconds": 60,
+      "totalMarkers": 2
+    }
+  ],
+  "penaltyRules": [
+    {
+      "name": "false_detection",
+      "type": "serial",
+      "points": [10, 20, 30]
+    },
+    {
+      "name": "late_finish",
+      "type": "all",
+      "points": []
+    },
+    {
+      "name": "equipment_violation",
+      "type": "serial",
+      "points": [5, 10, 15]
+    }
+  ]
+}
