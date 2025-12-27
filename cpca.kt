@@ -8,10 +8,9 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.my.models.competitions
-import com.example.my.utils.Json
+import models.competitions
 
-class cpca : AppCompatActivity() {
+class Cpca : AppCompatActivity() {
 
     private lateinit var etParticipantId: EditText
     private lateinit var spinnerCategory: Spinner
@@ -22,7 +21,7 @@ class cpca : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_choose_participant_category)
+        setContentView(R.layout.acpc)
 
         initViews()
         loadCompetitionConfig()
@@ -38,7 +37,6 @@ class cpca : AppCompatActivity() {
     }
 
     private fun loadCompetitionConfig() {
-        competition = Json.loadCompetitionFromAssets("competition.json", this)
         if (competition == null) {
             Toast.makeText(this, "Ошибка: не удалось загрузить конфигурацию!", Toast.LENGTH_LONG).show()
             finish()
@@ -47,14 +45,14 @@ class cpca : AppCompatActivity() {
 
     private fun setupSpinner() {
         competition?.let { comp ->
-            val categoryNames = comp.categories.map { it.name }.toTypedArray()
+            val categoryNames = comp.categories.map { category -> category.name }.toTypedArray()
             val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categoryNames)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spinnerCategory.adapter = adapter
         }
     }
 
-    private fun setupClickListeners() {
+    private  fun setupClickListeners() {
         btnStartSession.setOnClickListener {
             val participantId = etParticipantId.text.toString().trim()
             val selectedCategory = spinnerCategory.selectedItem as? String
@@ -69,7 +67,7 @@ class cpca : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val intent = Intent(this, CompetitionSessionActivity::class.java)
+            val intent = Intent(this, contentScene::class.java)
             intent.putExtra("PARTICIPANT_ID", participantId)
             intent.putExtra("CATEGORY_NAME", selectedCategory)
             startActivity(intent)
