@@ -1,15 +1,12 @@
-package utils
-
 import android.content.Context
-import com.example.my.models.competitions
 import com.example.my.models.pr
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.io.File
+import models.competitions
 import java.io.FileReader
 import java.io.FileWriter
 
-object JsonManager {
+private object JsonManager {
     private val gson = Gson()
 
     /**
@@ -55,11 +52,12 @@ object JsonManager {
      * @param filepath Полный путь к файлу для загрузки.
      * @return Объект ParticipantResult или null в случае ошибки.
      */
-    fun loadParticipantResultFromFile(filepath: String): pr? {
+    // Если pr и ParticipantResult - разные классы, но совместимы
+        fun loadParticipantResultFromFile(filepath: String): pr? {
         return try {
             val reader = FileReader(filepath)
             val type = object : TypeToken<pr>() {}.type
-            val result = gson.fromJson<>()son(reader,type)
+            val result = gson.fromJson<pr>(reader, type) // Изменили на pr
 
             reader.close()
             result
@@ -67,5 +65,4 @@ object JsonManager {
             e.printStackTrace()
             null
         }
-    }
-}
+    }}
