@@ -73,8 +73,7 @@ class ResultsViewerActivity : AppCompatActivity() {
                     // Количество найденных закладок
                     val foundMarkers = participantResult.markerDetectionTimes.size
 
-                    // Количество всего закладок (из конфигурации)
-                    val totalMarkers = competition?.category?.equals { it.name == participantResult.category }?.totalMarkers ?: 0
+                    val totalMarkers = competition?.categories?.find { it.name == participantResult.category }?.totalMarkers ?: 0
 
                     // Сумма штрафных баллов
                     val penaltyPoints = participantResult.penalties.sumOf { it.appliedPoints }
