@@ -1,86 +1,111 @@
 package com.example.my
-import adapters.ResultAdapter
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.my.models.competitions
+import adapters.ResultAdapter
+import com.example.my.models.pr
+import models.ParticipantResult
 import models.ResultItem
-
+import models.competitions
+import utils.json
+import java.io.File
 class ResultsViewerActivity : AppCompatActivity() {
 
     private lateinit var listViewResults: ListView
     private lateinit var btnLoadResults: Button
     private lateinit var btnBackToChoice: Button
-
-    private var competitionForResults: competitions? = null
-    private val resultList = mutableListOf<ResultItem>()
     private lateinit var adapter: ResultAdapter
+    private val resultList = mutableListOf<ResultItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.arv)
 
-        initViews()
-        loadCompetitionConfig()
-        setupClickListeners()
-    }
-
-    private fun initViews() {
+        // Инициализация Views
         listViewResults = findViewById(R.id.list_view_results)
         btnLoadResults = findViewById(R.id.btn_load_results)
         btnBackToChoice = findViewById(R.id.btn_back_to_choice)
 
+        // Инициализация адаптера
         adapter = ResultAdapter(this, resultList)
         listViewResults.adapter = adapter
-    }
 
-    private fun loadCompetitionConfig() {
-        competitionForResults = json.loadCompetitionFromAssets("competition.json", this)
-    }
-
-    private fun setupClickListeners() {
+        // Настройка слушателей
         btnLoadResults.setOnClickListener { loadResultsFromFiles() }
         btnBackToChoice.setOnClickListener { finish() }
     }
 
     private fun loadResultsFromFiles() {
+        // Очищаем старые результаты
         resultList.clear()
-        val filesDir = filesDir
-        val files = filesDir.listFiles { dir, name -> name.startsWith("result_") && name.endsWith(".json") }
 
-        if (files != null) {
-            for (file in files) {
-                val result = json.loadParticipantResultFromFile(file.absolutePath)
-                if (result != null) {
-                    val durationStr = if (result.finishTime != null && result.startTime != 0L) {
-                        val durationMs = result.finishTime!! - result.startTime
+        // Получаем папку filesDir
+        val filesDir = this.filesDir
+
+        // Ищем файлы с именем result_*.json
+        val resultFiles = filesDir.listFiles { file ->
+            file.name.startsWith("result_") && file.name.endsWith(".json")
+        }
+
+        // Проверяем, нашлись ли файлы
+        if (resultFiles != null && resultFiles.isNotEmpty()) {
+            // Загружаем конфигурацию соревнования для получения totalMarkers
+            val competition: competitions? = json.loadCompetitionFromAssets("competition.json", this)
+
+            // Проходим по каждому файлу результата
+            for (file in resultFiles) {
+                // Загружаем один результат из файла
+                val participantResult: pr? = json.loadParticipantResultFromFile(file.absolutePath)
+
+                // Проверяем, удалось ли загрузить результат
+                if (participantResult != null) {
+                    // Рассчитываем длительность
+                    val durationStr = if (participantResult.finishTime != null && participantResult.startTime != 0L) {
+                        val durationMs = participantResult.finishTime!! - participantResult.startTime
                         val durationSecs = durationMs / 1000
                         String.format("%02d:%02d", durationSecs / 60, durationSecs % 60)
                     } else {
                         "N/A"
                     }
 
-                    val foundMarkers = result.markerDetectionTimes.size
-                    val totalMarkers = competitionForResults?.categories?.find { it.name == result.categoryName }?.totalMarkers ?: 0
-                    val penaltyPoints = result.penalties.sumOf { it.appliedPoints }
+                    // Количество найденных закладок
+                    val foundMarkers = participantResult.markerDetectionTimes.size
 
+                    // Количество всего закладок (из конфигурации)
+                    val totalMarkers = competition?.category?.equals { it.name == participantResult.category }?.totalMarkers ?: 0
+
+                    // Сумма штрафных баллов
+                    val penaltyPoints = participantResult.penalties.sumOf { it.appliedPoints }
+
+                    // Создаем объект ResultItem для отображения в списке
                     val item = ResultItem(
-                        result.participantId,
-                        result.categoryName,
+                        participantResult.participantId,
+                        participantResult.categoryName,
                         durationStr,
                         foundMarkers,
                         totalMarkers,
                         penaltyPoints
                     )
+                    // Добавляем в список
                     resultList.add(item)
+                } else {
+                    // Если не удалось загрузить один файл, выводим сообщение в лог
+                    println("Ошибка: не удалось загрузить результат из файла ${file.absolutePath}")
                 }
             }
+
+            // Проверяем, были ли успешно загружены какие-то результаты
+            if (resultList.isEmpty()) {
+                Toast.makeText(this, "Не найдено корректных результатов.", Toast.LENGTH_SHORT).show()
+            }
         } else {
-            Toast.makeText(this, "Не удалось получить список файлов.", Toast.LENGTH_SHORT).show()
+            // Если файлов не нашлось
+            Toast.makeText(this, "Нет сохраненных результатов.", Toast.LENGTH_SHORT).show()
         }
 
+        // Уведомляем адаптер, что данные изменились
         adapter.notifyDataSetChanged()
     }
 }
