@@ -1,16 +1,17 @@
 package com.example.my
+
+import adapters.ResultAdapter
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import adapters.ResultAdapter
-import com.example.my.models.pr
-import models.ParticipantResult
+import com.google.gson.Gson
+import models.pr
 import models.ResultItem
 import models.competitions
-import utils.json
 import java.io.File
+
 class ResultsViewerActivity : AppCompatActivity() {
 
     private lateinit var listViewResults: ListView
@@ -18,6 +19,7 @@ class ResultsViewerActivity : AppCompatActivity() {
     private lateinit var btnBackToChoice: Button
     private lateinit var adapter: ResultAdapter
     private val resultList = mutableListOf<ResultItem>()
+    private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,13 +53,13 @@ class ResultsViewerActivity : AppCompatActivity() {
 
         // Проверяем, нашлись ли файлы
         if (resultFiles != null && resultFiles.isNotEmpty()) {
-            // Загружаем конфигурацию соревнования для получения totalMarkers
-            val competition: competitions? = json.loadCompetitionFromAssets("competition.json", this)
+            // Загружаем конфигурацию соревнования
+            val competition = loadCompetitionFromAssets()
 
             // Проходим по каждому файлу результата
             for (file in resultFiles) {
                 // Загружаем один результат из файла
-                val participantResult: pr? = json.loadParticipantResultFromFile(file.absolutePath)
+                val participantResult = loadParticipantResultFromFile(file)
 
                 // Проверяем, удалось ли загрузить результат
                 if (participantResult != null) {
@@ -73,7 +75,7 @@ class ResultsViewerActivity : AppCompatActivity() {
                     // Количество найденных закладок
                     val foundMarkers = participantResult.markerDetectionTimes.size
 
-                    val totalMarkers = competition?.categories?.find { it.name == participantResult.category }?.totalMarkers ?: 0
+                    val totalMarkers = competition?.categories?.find { it.name == participantResult.categoryName }?.totalMarkers ?: 0
 
                     // Сумма штрафных баллов
                     val penaltyPoints = participantResult.penalties.sumOf { it.appliedPoints }
@@ -106,5 +108,25 @@ class ResultsViewerActivity : AppCompatActivity() {
 
         // Уведомляем адаптер, что данные изменились
         adapter.notifyDataSetChanged()
+    }
+
+    private fun loadCompetitionFromAssets(): competitions? {
+        return try {
+            val jsonString = assets.open("competition.json").bufferedReader().use { it.readText() }
+            gson.fromJson(jsonString, competitions::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun loadParticipantResultFromFile(file: File): pr? {
+        return try {
+            val jsonString = file.readText()
+            gson.fromJson(jsonString, pr::class.java)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 }
