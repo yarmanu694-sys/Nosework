@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tv_category_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Категория: ..."
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_timer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:00"
+        android:textSize="24sp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_markers_found"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Найдено: 0/0"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tv_penalty_points"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Штрафы: 0"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Кнопка "Верно" -->
+    <Button
+        android:id="@+id/btn_correct"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Верно"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Кнопка "Неверно" -->
+    <Button
+        android:id="@+id/btn_incorrect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Неверно"
+        android:backgroundTint="#F44336"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Кнопка для применения штрафа (например, за опоздание) -->
+    <Button
+        android:id="@+id/btn_apply_penalty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Применить штраф (all)"
+        android:backgroundTint="#FF9800"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Кнопка завершения сессии (ручное завершение) -->
+    <Button
+        android:id="@+id/btn_end_session"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Завершить сессию"
+        android:backgroundTint="#9E9E9E"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Кнопка "Назад" -->
+    <Button
+        android:id="@+id/btn_back_to_choice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#2196F3"
+        android:text="Назад к выбору" />
+
+</LinearLayout>
