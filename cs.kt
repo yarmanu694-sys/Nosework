@@ -151,8 +151,8 @@ class CompetitionSession(private val competition: competitions) {
         return competition.categories.find { it.name == name }
     }
 
-    // ✅ Исправлено: возвращает PenaltyRule, а не pr
     private fun findPenaltyRuleByName(name: String): penaltyRule? {
         return competition.penaltyRules.find { it.name == name }
     }
 }
+
