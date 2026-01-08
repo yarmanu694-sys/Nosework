@@ -1,10 +1,10 @@
-package logic
+package utils
 
 import models.*
 import models.category
 import models.competitions
+import models.penaltyRule
 import java.util.*
-
 
 class CompetitionSession(private val competition: competitions) {
 
@@ -48,11 +48,9 @@ class CompetitionSession(private val competition: competitions) {
             result.markerDetectionTimes.add(System.currentTimeMillis())
             println("Правильное обнаружение! Найдено: $currentCorrectDetections/${category.totalMarkers}")
         } else {
-            // Применить штраф за ложное обнаружение
-            applyPenalty("false_detection") // Предполагаем, что такое правило существует
+            applyPenalty("false_detection")
         }
 
-        // Проверить условия окончания
         return checkEndConditions(category)
     }
 
@@ -67,18 +65,26 @@ class CompetitionSession(private val competition: competitions) {
                 println("Правило штрафа не найдено: $penaltyRuleName")
                 return
             }
+
         var pointsToApply = 0
         when (rule.type) {
             "serial" -> {
                 val counter = serialPenaltyCounters.getOrDefault(penaltyRuleName, 0)
-                if (counter < rule.points. size) {
-                    pointsToApply = rule.points [counter]
+                if (counter < rule.points.size) {
+                    pointsToApply = rule.points[counter]
                     serialPenaltyCounters[penaltyRuleName] = counter + 1
+                } else {
+                    // Опционально: игнорировать или использовать последнее значение
+                    pointsToApply = rule.points.lastOrNull() ?: 0
                 }
             }
             "all" -> {
-                // Тип "all" - судья сам решает. Здесь заглушка.
+                // Судейский штраф — не применяется автоматически
                 pointsToApply = 0
+            }
+            else -> {
+                println("Неизвестный тип правила штрафа: ${rule.type}")
+                return
             }
         }
 
@@ -97,7 +103,6 @@ class CompetitionSession(private val competition: competitions) {
         result.penalties.add(pi(ruleName, pointsToApply, System.currentTimeMillis()))
         println("Применен кастомный штраф: $ruleName, баллов: $pointsToApply, всего штрафов: $currentTotalPenaltyPoints")
 
-        // Проверить условия окончания, если это возможно
         if (result.finishTime == null) {
             val category = findCategoryByName(result.categoryName)
             if (category != null) {
@@ -108,28 +113,26 @@ class CompetitionSession(private val competition: competitions) {
 
     private fun checkEndConditions(category: category): Boolean {
         val elapsed = System.currentTimeMillis() - sessionStartTime
-// Условие 1: Время истекло
+
         if (elapsed >= category.totalTimeSeconds * 1000L) {
             println("Время истекло!")
             endSession()
             return true
         }
 
-// Условие 2: Все закладки найдены
         if (currentCorrectDetections >= category.totalMarkers) {
             println("Все закладки найдены!")
             endSession()
             return true
         }
 
-// Условие 3: Суммарный штраф превысил лимит баллов
         if (currentTotalPenaltyPoints >= category.totalPoints) {
             println("Штрафы превысили лимит баллов!")
             endSession()
             return true
         }
 
-        return false // Сессия продолжается
+        return false
     }
 
     private fun endSession() {
@@ -137,20 +140,19 @@ class CompetitionSession(private val competition: competitions) {
             if (result.finishTime == null) {
                 result.finishTime = System.currentTimeMillis()
                 println("Сессия завершена.")
-                // Здесь можно сохранить результат в файл или передать в другую часть приложения
+                // Сохранение результата можно добавить здесь
             }
         }
     }
 
-    fun getCurrentResult(): pr? {
-        return currentResult
-    }
+    fun getCurrentResult(): pr? = currentResult
 
     private fun findCategoryByName(name: String): category? {
         return competition.categories.find { it.name == name }
     }
 
-    private fun findPenaltyRuleByName(name: String): pr? {
-        return competition.penaltyRules.find { return@find it.name == name }
+    // ✅ Исправлено: возвращает PenaltyRule, а не pr
+    private fun findPenaltyRuleByName(name: String): penaltyRule? {
+        return competition.penaltyRules.find { it.name == name }
     }
 }
